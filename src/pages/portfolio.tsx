@@ -1,9 +1,59 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaTimes, FaChevronLeft, FaChevronRight, FaArrowLeft } from "react-icons/fa";
+import {
+  FaExternalLinkAlt, FaChevronLeft, FaChevronRight,
+  FaTimes, FaPlay, FaImage, FaVideo, FaArrowLeft,
+} from "react-icons/fa";
 
+/* ─── WEB PROJECTS ─────────────────────────────────────── */
+const webProjects = [
+  {
+    id: "web-1", title: "Prime Logistics",
+    desc: "A modern logistics & transportation company website with real-time tracking UI, service showcases, and a sleek fleet presentation.",
+    tag: "Logistics / Transportation",
+    link: "https://prime-logistics-prime-logistics.vercel.app/",
+    image: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=700&q=80",
+  },
+  {
+    id: "web-2", title: "HKB Consultancy",
+    desc: "Professional business consultancy website highlighting services, team expertise, and client success stories.",
+    tag: "Business Consultancy",
+    link: "https://hkbtradersofficial-star.github.io/hkbconsultancy/#home",
+    image: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=700&q=80",
+  },
+  {
+    id: "web-3", title: "Upwise Consulting",
+    desc: "Business advisory & consulting platform with clean, conversion-focused design.",
+    tag: "Consulting / Advisory",
+    link: "https://upwise-consulting.vercel.app/",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=700&q=80",
+  },
+  {
+    id: "web-4", title: "HR Pharmaceuticals",
+    desc: "Full-featured pharmaceutical management & admin system with inventory and reporting dashboard.",
+    tag: "Management System",
+    link: "https://hr-pharmaceuticals.vercel.app/",
+    image: "https://images.unsplash.com/photo-1585435557343-3b092031a831?w=700&q=80",
+  },
+  {
+    id: "web-5", title: "Softzilla",
+    desc: "Modern software & tech company website showcasing services and solutions.",
+    tag: "Software / Tech",
+    link: "https://ahmadali2003an-max.github.io/softzilaa-website/",
+    image: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=700&q=80",
+  },
+];
+
+/* ─── VIDEO PLACEHOLDERS ────────────────────────────────── */
+const videoPlaceholders = [
+  { id: "vid-1", title: "Brand Promo Video", tag: "Promotional" },
+  { id: "vid-2", title: "Social Media Reel", tag: "Short Form" },
+  { id: "vid-3", title: "Product Showcase", tag: "Commercial" },
+];
+
+/* ─── GRAPHIC DESIGN IMAGES ─────────────────────────────── */
 const categoryImages: Record<string, string[]> = {
   "elaichi-cafe": [
     "BAR bq PARATHA roll.png","Bihari botti.png","Bihari Botti-1.png","Bihari Chest Piece.png",
@@ -65,13 +115,26 @@ const categories = [
   { id: "sbs", name: "SBS", desc: "Corporate Branding" },
 ];
 
+/* ─── LIGHTBOX ───────────────────────────────────────────── */
 function Lightbox({ images, index, onClose, onPrev, onNext }: {
-  images: string[]; index: number; onClose: () => void; onPrev: () => void; onNext: () => void;
+  images: string[]; index: number;
+  onClose: () => void; onPrev: () => void; onNext: () => void;
 }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft") onPrev();
+      if (e.key === "ArrowRight") onNext();
+    };
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = ""; };
+  }, [onClose, onPrev, onNext]);
+
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-sm px-4"
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-sm px-10"
       onClick={onClose}
     >
       <motion.div
@@ -82,126 +145,239 @@ function Lightbox({ images, index, onClose, onPrev, onNext }: {
         <button onClick={onClose} className="absolute -top-10 right-0 text-white/70 hover:text-white">
           <FaTimes size={22} />
         </button>
-        <img src={images[index]} alt="" className="w-full max-h-[80vh] object-contain rounded-xl" />
-        <div className="absolute inset-y-0 left-0 flex items-center -ml-12">
-          <button onClick={onPrev} className="text-white/60 hover:text-white p-2">
-            <FaChevronLeft size={28} />
-          </button>
-        </div>
-        <div className="absolute inset-y-0 right-0 flex items-center -mr-12">
-          <button onClick={onNext} className="text-white/60 hover:text-white p-2">
-            <FaChevronRight size={28} />
-          </button>
-        </div>
+        <img src={images[index]} alt="" className="w-full max-h-[80vh] object-contain rounded-xl" loading="lazy" />
+        <button
+          onClick={onPrev}
+          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-10 text-white/60 hover:text-white p-2 bg-black/50 rounded-full"
+        >
+          <FaChevronLeft size={22} />
+        </button>
+        <button
+          onClick={onNext}
+          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-10 text-white/60 hover:text-white p-2 bg-black/50 rounded-full"
+        >
+          <FaChevronRight size={22} />
+        </button>
         <p className="text-center text-white/40 text-sm mt-3">{index + 1} / {images.length}</p>
       </motion.div>
     </motion.div>
   );
 }
 
+/* ─── SECTION HEADING ────────────────────────────────────── */
+function SectionHeading({ label, title, accent }: { label: string; title: string; accent: string }) {
+  return (
+    <div className="mb-10">
+      <span className="text-[#0066ff] text-xs font-bold uppercase tracking-widest">{label}</span>
+      <h2 className="text-3xl md:text-4xl font-bold text-white mt-1">
+        {title} <span className="text-[#0066ff]">{accent}</span>
+      </h2>
+    </div>
+  );
+}
+
+/* ─── MAIN ───────────────────────────────────────────────── */
 export default function Portfolio() {
+  const [activeFilter, setActiveFilter] = useState("All");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+
   const currentImages = activeCategory ? categoryImages[activeCategory] : [];
+
+  const onPrev = useCallback(() =>
+    setLightboxIdx(i => (i! - 1 + currentImages.length) % currentImages.length), [currentImages]);
+  const onNext = useCallback(() =>
+    setLightboxIdx(i => (i! + 1) % currentImages.length), [currentImages]);
+
+  const filters = ["All", "Web", "Design", "Video"];
 
   return (
     <div className="min-h-screen bg-black text-white">
       <Navbar />
       <main className="pt-24 pb-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-          <div className="text-center mb-12">
-            <span className="text-[#0066ff] text-sm font-semibold uppercase tracking-widest">Our Work</span>
-            <h1 className="text-4xl md:text-5xl font-bold text-white mt-2">
-              Graphic <span className="text-[#0066ff]">Design</span> Portfolio
-            </h1>
-            <p className="text-white/50 mt-3 max-w-xl mx-auto">
-              Click any category to explore the full project gallery.
-            </p>
-          </div>
+        {/* ── HEADER ── */}
+        <div className="text-center py-16 px-4">
+          <span className="text-[#0066ff] text-sm font-semibold uppercase tracking-widest">Our Work</span>
+          <h1 className="text-4xl md:text-6xl font-bold text-white mt-2">
+            Our <span className="text-[#0066ff]">Portfolio</span>
+          </h1>
+          <p className="text-white/50 mt-3 max-w-xl mx-auto">
+            Real work. Real results. Explore our projects across web, design, and video.
+          </p>
+        </div>
 
-          <AnimatePresence mode="wait">
-            {!activeCategory && (
-              <motion.div
-                key="categories"
-                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+        {/* ── FILTERS ── */}
+        {!activeCategory && (
+          <div className="flex justify-center gap-2 mb-12 px-4 flex-wrap">
+            {filters.map(f => (
+              <button
+                key={f}
+                onClick={() => setActiveFilter(f)}
+                className={`px-5 py-2 rounded-full text-sm font-semibold border transition-all duration-200
+                  ${activeFilter === f
+                    ? "bg-[#0066ff] border-[#0066ff] text-white"
+                    : "border-white/20 text-white/60 hover:border-[#0066ff] hover:text-white"}`}
               >
-                {categories.map((cat, i) => (
+                {f}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20">
+
+          {/* ══ WEB PROJECTS ═══════════════════════════════ */}
+          {!activeCategory && (activeFilter === "All" || activeFilter === "Web") && (
+            <section>
+              <SectionHeading label="Web Development" title="Web" accent="Projects" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {webProjects.map((project, i) => (
                   <motion.div
-                    key={cat.id}
-                    initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.08 }}
-                    onClick={() => setActiveCategory(cat.id)}
-                    className="group relative rounded-2xl overflow-hidden border border-white/10 hover:border-[#0066ff]/50 cursor-pointer transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,102,255,0.2)]"
-                    style={{ aspectRatio: "4/3" }}
+                    key={project.id}
+                    initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }} transition={{ delay: i * 0.08, duration: 0.4 }}
+                    className="group relative rounded-2xl overflow-hidden border border-white/10 hover:border-[#0066ff]/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,102,255,0.18)] bg-white/3"
+                    style={{ aspectRatio: "16/9" }}
                   >
-                    <img
-                      src={categoryImages[cat.id]?.[0]}
-                      alt={cat.name}
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <p className="text-[#0066ff] text-xs font-semibold uppercase tracking-wider mb-1">{cat.desc}</p>
-                      <h3 className="text-white text-xl font-bold">{cat.name}</h3>
-                      <p className="text-white/50 text-xs mt-1">{categoryImages[cat.id]?.length} images</p>
+                    <img src={project.image} alt={project.title}
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-black/10" />
+                    <div className="absolute top-3 left-3">
+                      <span className="px-2.5 py-0.5 bg-[#0066ff] text-white text-xs font-bold rounded-full">{project.tag}</span>
                     </div>
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/40">
-                      <span className="px-5 py-2 bg-[#0066ff] text-white text-sm font-bold rounded-full">
-                        View Gallery
-                      </span>
+                    <div className="absolute bottom-0 left-0 right-0 p-5">
+                      <h3 className="text-xl font-bold text-white mb-1">{project.title}</h3>
+                      <p className="text-white/55 text-sm leading-relaxed mb-4 line-clamp-2">{project.desc}</p>
+                      <a href={project.link} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-5 py-2 bg-[#0066ff] text-white text-sm font-semibold rounded-lg hover:bg-[#0052cc] transition-all duration-200">
+                        <FaExternalLinkAlt size={11} /> View Live Site
+                      </a>
                     </div>
                   </motion.div>
                 ))}
-              </motion.div>
-            )}
+              </div>
+            </section>
+          )}
 
-            {activeCategory && (
+          {/* ══ GRAPHIC DESIGN ════════════════════════════ */}
+          {(activeFilter === "All" || activeFilter === "Design") && (
+            <section>
+              <SectionHeading label="Graphic Design" title="Design" accent="Work" />
+
+              <AnimatePresence mode="wait">
+                {/* Categories */}
+                {!activeCategory && (
+                  <motion.div key="cats"
+                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                  >
+                    {categories.map((cat, i) => (
+                      <motion.div key={cat.id}
+                        initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.08 }}
+                        onClick={() => setActiveCategory(cat.id)}
+                        className="group relative rounded-2xl overflow-hidden border border-white/10 hover:border-[#0066ff]/50 cursor-pointer transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,102,255,0.2)]"
+                        style={{ aspectRatio: "4/3" }}
+                      >
+                        <img src={categoryImages[cat.id]?.[0]} alt={cat.name} loading="lazy"
+                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                        <div className="absolute bottom-4 left-4 right-4">
+                          <p className="text-[#0066ff] text-xs font-semibold uppercase tracking-wider mb-1">{cat.desc}</p>
+                          <h3 className="text-white text-xl font-bold">{cat.name}</h3>
+                          <p className="text-white/50 text-xs mt-1">{categoryImages[cat.id]?.length} images</p>
+                        </div>
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/40">
+                          <span className="px-5 py-2 bg-[#0066ff] text-white text-sm font-bold rounded-full">View Gallery</span>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                )}
+
+                {/* Gallery */}
+                {activeCategory && (
+                  <motion.div key="gallery"
+                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                  >
+                    <button onClick={() => { setActiveCategory(null); setLightboxIdx(null); }}
+                      className="flex items-center gap-2 text-white/60 hover:text-white mb-8 transition-colors">
+                      <FaArrowLeft size={14} /> Back to Categories
+                    </button>
+                    <h2 className="text-2xl font-bold text-white mb-8">
+                      {categories.find(c => c.id === activeCategory)?.name}
+                    </h2>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                      {currentImages.map((img, i) => (
+                        <motion.div key={i}
+                          initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: i * 0.02 }}
+                          onClick={() => setLightboxIdx(i)}
+                          className="relative rounded-xl overflow-hidden cursor-pointer group border border-white/10 hover:border-[#0066ff]/50"
+                          style={{ aspectRatio: "1/1" }}
+                        >
+                          <img src={img} alt="" loading="lazy"
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300" />
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </section>
+          )}
+
+          {/* ══ VIDEO SECTION ═════════════════════════════ */}
+          {!activeCategory && (activeFilter === "All" || activeFilter === "Video") && (
+            <section>
+              <SectionHeading label="Video Production" title="Video" accent="Showcase" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {videoPlaceholders.map((vid, i) => (
+                  <motion.div key={vid.id}
+                    initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.4 }}
+                    className="relative rounded-2xl overflow-hidden border border-white/10 border-dashed flex flex-col items-center justify-center text-center p-8 gap-4 bg-white/3"
+                    style={{ aspectRatio: "16/9" }}
+                  >
+                    <div className="w-16 h-16 rounded-full bg-[#0066ff]/10 border border-[#0066ff]/30 flex items-center justify-center">
+                      <FaPlay size={20} className="text-[#0066ff] ml-1" />
+                    </div>
+                    <div>
+                      <span className="px-2.5 py-0.5 bg-[#0066ff]/15 text-[#0066ff] text-xs font-bold rounded-full mb-2 inline-block">{vid.tag}</span>
+                      <h3 className="text-white font-bold text-base">{vid.title}</h3>
+                      <p className="text-white/35 text-xs mt-1">Video coming soon</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
               <motion.div
-                key="gallery"
-                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                className="mt-8 rounded-2xl border border-[#0066ff]/20 bg-[#0066ff]/5 p-6 flex flex-col sm:flex-row items-center gap-4"
               >
-                <button
-                  onClick={() => { setActiveCategory(null); setLightboxIdx(null); }}
-                  className="flex items-center gap-2 text-white/60 hover:text-white mb-8 transition-colors"
-                >
-                  <FaArrowLeft size={14} /> Back to Categories
-                </button>
-                <h2 className="text-2xl font-bold text-white mb-8">
-                  {categories.find(c => c.id === activeCategory)?.name}
-                </h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                  {currentImages.map((img, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: i * 0.02 }}
-                      onClick={() => setLightboxIdx(i)}
-                      className="relative rounded-xl overflow-hidden cursor-pointer group border border-white/10 hover:border-[#0066ff]/50"
-                      style={{ aspectRatio: "1/1" }}
-                    >
-                      <img src={img} alt="" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300" />
-                    </motion.div>
-                  ))}
+                <div className="w-12 h-12 rounded-full bg-[#0066ff]/15 border border-[#0066ff]/30 flex items-center justify-center flex-shrink-0">
+                  <FaVideo size={18} className="text-[#0066ff]" />
                 </div>
+                <div className="text-center sm:text-left">
+                  <h4 className="text-white font-bold text-base">Video Portfolio — Coming Soon</h4>
+                  <p className="text-white/50 text-sm mt-0.5">Videos will be uploaded here soon.</p>
+                </div>
+                <a href="https://wa.me/923414498408" target="_blank" rel="noopener noreferrer"
+                  className="ml-auto flex-shrink-0 px-5 py-2 bg-[#0066ff] text-white text-sm font-semibold rounded-lg hover:bg-[#0052cc] transition-colors duration-200">
+                  Request a Video
+                </a>
               </motion.div>
-            )}
-          </AnimatePresence>
+            </section>
+          )}
+
         </div>
       </main>
 
       <AnimatePresence>
         {lightboxIdx !== null && (
-          <Lightbox
-            images={currentImages}
-            index={lightboxIdx}
-            onClose={() => setLightboxIdx(null)}
-            onPrev={() => setLightboxIdx(i => (i! - 1 + currentImages.length) % currentImages.length)}
-            onNext={() => setLightboxIdx(i => (i! + 1) % currentImages.length)}
-          />
+          <Lightbox images={currentImages} index={lightboxIdx}
+            onClose={() => setLightboxIdx(null)} onPrev={onPrev} onNext={onNext} />
         )}
       </AnimatePresence>
 
