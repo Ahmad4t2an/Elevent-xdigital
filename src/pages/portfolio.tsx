@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaExternalLinkAlt, FaChevronLeft, FaChevronRight,
-  FaTimes, FaPlay, FaVideo, FaArrowLeft,
+  FaTimes, FaArrowLeft,
 } from "react-icons/fa";
 
 const webProjects = [
@@ -45,10 +45,26 @@ const webProjects = [
   },
 ];
 
-const videoPlaceholders = [
-  { id: "vid-1", title: "Brand Promo Video", tag: "Promotional" },
-  { id: "vid-2", title: "Social Media Reel", tag: "Short Form" },
-  { id: "vid-3", title: "Product Showcase", tag: "Commercial" },
+// ── Real video reels ──────────────────────────────────────────────────────────
+const videoReels = [
+  {
+    id: "vid-1",
+    title: "SBS Tutorial",
+    tag: "Tutorial",
+    src: "/portfolio/videos/Sbs Tutorial.mp4",
+  },
+  {
+    id: "vid-2",
+    title: "HR Pharma Demo",
+    tag: "Commercial",
+    src: "/portfolio/videos/HR Pharma Demo.mp4",
+  },
+  {
+    id: "vid-3",
+    title: "Prime Logistics",
+    tag: "Promotional",
+    src: "/portfolio/videos/Prime Logistics.mp4",
+  },
 ];
 
 const categoryImages: Record<string, string[]> = {
@@ -108,10 +124,14 @@ const categories = [
   { id: "sbs", name: "SBS", desc: "Corporate Branding" },
 ];
 
+// ── Lightbox ──────────────────────────────────────────────────────────────────
 function Lightbox({ images, index, onClose, onPrev, onNext }: {
   images: string[]; index: number;
   onClose: () => void; onPrev: () => void; onNext: () => void;
 }) {
+  // touch swipe inside lightbox
+  const touchStartX = useRef<number | null>(null);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -128,6 +148,13 @@ function Lightbox({ images, index, onClose, onPrev, onNext }: {
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-sm px-12"
       onClick={onClose}
+      onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+      onTouchEnd={(e) => {
+        if (touchStartX.current === null) return;
+        const diff = touchStartX.current - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 40) diff > 0 ? onNext() : onPrev();
+        touchStartX.current = null;
+      }}
     >
       <motion.div
         initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
@@ -150,6 +177,101 @@ function Lightbox({ images, index, onClose, onPrev, onNext }: {
   );
 }
 
+// ── Draggable / swipeable image row (for category thumbnails) ─────────────────
+function SwipeableImageRow({ images, onImageClick }: {
+  images: string[];
+  onImageClick: (i: number) => void;
+}) {
+  const rowRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const scrollLeft = useRef(0);
+  const dragDistance = useRef(0);
+
+  // Mouse drag
+  const onMouseDown = (e: React.MouseEvent) => {
+    if (!rowRef.current) return;
+    isDragging.current = true;
+    dragDistance.current = 0;
+    startX.current = e.pageX - rowRef.current.offsetLeft;
+    scrollLeft.current = rowRef.current.scrollLeft;
+    rowRef.current.style.cursor = "grabbing";
+    rowRef.current.style.userSelect = "none";
+  };
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging.current || !rowRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - rowRef.current.offsetLeft;
+    const walk = (x - startX.current) * 1.2;
+    dragDistance.current = Math.abs(walk);
+    rowRef.current.scrollLeft = scrollLeft.current - walk;
+  };
+  const onMouseUp = () => {
+    if (!rowRef.current) return;
+    isDragging.current = false;
+    rowRef.current.style.cursor = "grab";
+    rowRef.current.style.removeProperty("user-select");
+  };
+
+  // Touch swipe
+  const touchStart = useRef(0);
+  const touchScrollLeft = useRef(0);
+  const onTouchStart = (e: React.TouchEvent) => {
+    if (!rowRef.current) return;
+    touchStart.current = e.touches[0].clientX;
+    touchScrollLeft.current = rowRef.current.scrollLeft;
+  };
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (!rowRef.current) return;
+    const diff = touchStart.current - e.touches[0].clientX;
+    rowRef.current.scrollLeft = touchScrollLeft.current + diff;
+  };
+
+  return (
+    <div className="relative">
+      {/* Left / Right fade hints */}
+      <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black to-transparent z-10" />
+      <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-black to-transparent z-10" />
+
+      <div
+        ref={rowRef}
+        className="flex gap-3 overflow-x-auto pb-2 scroll-smooth"
+        style={{
+          cursor: "grab",
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+        }}
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={onMouseUp}
+        onMouseLeave={onMouseUp}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+      >
+        {images.map((img, i) => (
+          <div
+            key={i}
+            onClick={() => {
+              // only open lightbox if wasn't a drag
+              if (dragDistance.current < 6) onImageClick(i);
+            }}
+            className="flex-shrink-0 rounded-xl overflow-hidden cursor-pointer border border-white/10 hover:border-[#0066ff]/50 group transition-all duration-200"
+            style={{ width: 180, height: 180 }}
+          >
+            <img
+              src={img}
+              alt=""
+              loading="lazy"
+              draggable={false}
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110 pointer-events-none"
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function SectionHeading({ label, title, accent }: { label: string; title: string; accent: string }) {
   return (
     <div className="mb-10">
@@ -161,6 +283,7 @@ function SectionHeading({ label, title, accent }: { label: string; title: string
   );
 }
 
+// ── Main component ────────────────────────────────────────────────────────────
 export default function Portfolio() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -225,7 +348,7 @@ export default function Portfolio() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-20">
 
-          {/* WEB PROJECTS */}
+          {/* ── WEB PROJECTS ── */}
           {!activeCategory && (activeFilter === "All" || activeFilter === "Web") && (
             <section>
               <SectionHeading label="Web Development" title="Web" accent="Projects" />
@@ -256,7 +379,7 @@ export default function Portfolio() {
             </section>
           )}
 
-          {/* GRAPHIC DESIGN */}
+          {/* ── GRAPHIC DESIGN ── */}
           {(activeFilter === "All" || activeFilter === "Design") && (
             <section>
               <SectionHeading label="Graphic Design" title="Design" accent="Work" />
@@ -287,6 +410,7 @@ export default function Portfolio() {
                     ))}
                   </motion.div>
                 )}
+
                 {activeCategory && (
                   <motion.div key="gallery"
                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
@@ -294,10 +418,23 @@ export default function Portfolio() {
                       className="flex items-center gap-2 text-white/60 hover:text-white mb-8 transition-colors">
                       <FaArrowLeft size={14} /> Back to Categories
                     </button>
-                    <h2 className="text-2xl font-bold text-white mb-8">
+                    <h2 className="text-2xl font-bold text-white mb-2">
                       {categories.find((c) => c.id === activeCategory)?.name}
                     </h2>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    {/* Swipe hint */}
+                    <p className="text-white/35 text-xs mb-5 flex items-center gap-1.5">
+                      <span>←</span> Swipe or drag to browse · tap to open
+                      <span>→</span>
+                    </p>
+
+                    {/* ── Swipeable horizontal row ── */}
+                    <SwipeableImageRow
+                      images={currentImages}
+                      onImageClick={(i) => setLightboxIdx(i)}
+                    />
+
+                    {/* ── Also keep the grid below for desktop discovery ── */}
+                    <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                       {currentImages.map((img, i) => (
                         <motion.div key={i}
                           initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
@@ -317,42 +454,42 @@ export default function Portfolio() {
             </section>
           )}
 
-          {/* VIDEO */}
+          {/* ── VIDEO REELS ── */}
           {!activeCategory && (activeFilter === "All" || activeFilter === "Video") && (
             <section>
               <SectionHeading label="Video Production" title="Video" accent="Showcase" />
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {videoPlaceholders.map((vid, i) => (
+                {videoReels.map((vid, i) => (
                   <motion.div key={vid.id}
                     initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.4 }}
-                    className="relative rounded-2xl overflow-hidden border border-white/10 border-dashed flex flex-col items-center justify-center text-center p-8 gap-4 bg-white/3"
-                    style={{ aspectRatio: "16/9" }}>
-                    <div className="w-16 h-16 rounded-full bg-[#0066ff]/10 border border-[#0066ff]/30 flex items-center justify-center">
-                      <FaPlay size={20} className="text-[#0066ff] ml-1" />
+                    className="relative rounded-2xl overflow-hidden border border-white/10 bg-black"
+                    style={{ aspectRatio: "9/16" }}   // vertical reel ratio
+                  >
+                    {/* Tag badge */}
+                    <div className="absolute top-3 left-3 z-10">
+                      <span className="px-2.5 py-0.5 bg-[#0066ff] text-white text-xs font-bold rounded-full">
+                        {vid.tag}
+                      </span>
                     </div>
-                    <div>
-                      <span className="px-2.5 py-0.5 bg-[#0066ff]/15 text-[#0066ff] text-xs font-bold rounded-full mb-2 inline-block">{vid.tag}</span>
-                      <h3 className="text-white font-bold text-base">{vid.title}</h3>
-                      <p className="text-white/35 text-xs mt-1">Video coming soon</p>
+
+                    {/* Title at bottom */}
+                    <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-black/80 to-transparent p-4">
+                      <h3 className="text-white font-bold text-sm">{vid.title}</h3>
                     </div>
+
+                    {/* Video */}
+                    <video
+                      src={vid.src}
+                      className="w-full h-full object-cover"
+                      controls
+                      preload="metadata"
+                      playsInline
+                      loop
+                    />
                   </motion.div>
                 ))}
               </div>
-              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-                className="mt-8 rounded-2xl border border-[#0066ff]/20 bg-[#0066ff]/5 p-6 flex flex-col sm:flex-row items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-[#0066ff]/15 border border-[#0066ff]/30 flex items-center justify-center flex-shrink-0">
-                  <FaVideo size={18} className="text-[#0066ff]" />
-                </div>
-                <div className="text-center sm:text-left">
-                  <h4 className="text-white font-bold text-base">Video Portfolio — Coming Soon</h4>
-                  <p className="text-white/50 text-sm mt-0.5">Videos will be uploaded here soon.</p>
-                </div>
-                <a href="https://wa.me/923414498408" target="_blank" rel="noopener noreferrer"
-                  className="ml-auto flex-shrink-0 px-5 py-2 bg-[#0066ff] text-white text-sm font-semibold rounded-lg hover:bg-[#0052cc] transition-colors duration-200">
-                  Request a Video
-                </a>
-              </motion.div>
             </section>
           )}
 
