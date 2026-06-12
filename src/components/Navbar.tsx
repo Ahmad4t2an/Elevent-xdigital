@@ -52,7 +52,7 @@ export default function Navbar() {
             <img
               src={logoSrc}
               alt="ElevateX Digital"
-              style={{ height: 45, width: "auto", objectFit: "contain" }}
+              style={{ height: 55, width: "auto", objectFit: "contain" }}
             />
           </Link>
 
