@@ -45,7 +45,7 @@ const webProjects = [
   },
 
   {
-    id: "web-5", title: "Tech Startup Nova",
+    id: "web-6", title: "Tech Startup Nova",
     desc: "Cutting-edge tech startup website with a bold modern design, service showcases, and an engaging.",
     tag: "Software / Tech",
     link: "https://tech-nova-eta.vercel.app/",
