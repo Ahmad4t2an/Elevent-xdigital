@@ -49,7 +49,7 @@ const webProjects = [
     desc: "Cutting-edge tech startup website with a bold modern design, service showcases, and an engaging.",
     tag: "Software / Tech",
     link: "https://tech-nova-eta.vercel.app/",
-    image: "	https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=700&q=80",
+    image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=700&q=80",
   },
 ];
 
@@ -122,6 +122,14 @@ const categoryImages: Record<string, string[]> = {
   "sbs": [
     "most luxury.png", "sbs 1.png", "tower with image.png",
   ].map(f => `/portfolio/SBS/${f}`),
+  "quran-academy": [
+    "Post 1.png", "post 2.png", "Post 3.png", "post 4.png", "post 5.png",
+    "post 6.png", "post 7.png", "post 8.png", "post 9.png", "post 10.png",
+    "post 11.png", "post 12.png", "post13.png", "post 14.png", "post 15.png",
+    "post 16.png", "post 17.png", "post 18.png", "post 19.png", "post 20.png",
+    "post 21.png", "post 22.png", "post 23.png", "post 24.png", "post 25.png",
+    "post 26.png", "post 27.png", "post 28.png", "post 29.png", "post 30.png",
+  ].map(f => `/portfolio/Quran Academy/${f}`),
 };
 
 const categories = [
@@ -130,6 +138,7 @@ const categories = [
   { id: "logo", name: "Logo Design", desc: "Logo & Visual Identity" },
   { id: "prime-logistics", name: "Prime Logistics", desc: "Logistics & Transport Branding" },
   { id: "sbs", name: "SBS", desc: "Corporate Branding" },
+  { id: "quran-academy", name: "Quran Academy", desc: "Islamic Education / Social Media" },
 ];
 
 // ── Lightbox ──────────────────────────────────────────────────────────────────
