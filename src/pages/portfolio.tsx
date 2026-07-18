@@ -51,6 +51,21 @@ const webProjects = [
     link: "https://tech-nova-eta.vercel.app/",
     image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=700&q=80",
   },
+ {
+    id: "web-7", title: "Quran Academy",
+    desc: "Online Quran learning platform with course listings, teacher profiles, and easy student enrollment.",
+    tag: "Education / Islamic Learning",
+    link: "https://umair-quran-academy-umair-quran-aca.vercel.app/",
+    image: "https://images.unsplash.com/photo-1542816417-0983c9c9ad53?w=700&q=80",
+  },
+
+{
+    id: "web-8", title: "Pest Kill",
+    desc: "Professional pest control company website with service listings and easy quote requests.",
+    tag: "Pest Control / Home Services",
+    link: "https://pest-kill-website.vercel.app/",
+    image: "https://images.unsplash.com/photo-1749030417784-f8abf669dd41?w=700&q=80",
+  },
 ];
 
 // ── Real video reels ──────────────────────────────────────────────────────────
